@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { PlayerCustomization } from '../components/PlayerCustomization';
 import { GameHistory } from '../components/GameHistory';
 import { GameRules } from '../components/GameRules';
 import { VictoryModal } from '../components/VictoryModal';
+import { Copyright } from '../components/Copyright';
 import { 
   GameState, 
   GamePiece, 
@@ -593,6 +593,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-wood font-comfortaa">
       {renderScreen()}
+      <Copyright />
     </div>
   );
 };
