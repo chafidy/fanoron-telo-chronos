@@ -45,7 +45,8 @@ import {
   Home, 
   RotateCcw, 
   Settings,
-  Timer as TimerIcon
+  Timer as TimerIcon,
+  Trophy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
