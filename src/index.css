@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +9,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 42 21% 85%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -17,7 +18,7 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 100 20% 65%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -26,7 +27,7 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 100 30% 70%;
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -34,7 +35,7 @@ All colors MUST be HSL.
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 100 20% 65%;
 
     --radius: 0.5rem;
 
@@ -100,6 +101,39 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-wood text-foreground font-comfortaa;
+    background: linear-gradient(135deg, #D4C5B9 0%, #A1C398 100%);
   }
+}
+
+.wood-texture {
+  background: 
+    linear-gradient(90deg, transparent 76%, rgba(139, 159, 127, 0.1) 79%, transparent 81%),
+    linear-gradient(135deg, #D4C5B9 0%, #A1C398 25%, #8B9F7F 50%, #A1C398 75%, #D4C5B9 100%);
+}
+
+.stone-piece {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.stone-piece:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.board-intersection {
+  transition: all 0.2s ease-in-out;
+}
+
+.board-intersection:hover {
+  transform: scale(1.1);
+}
+
+.timer-urgent {
+  animation: pulse-glow 1s ease-in-out infinite;
 }
