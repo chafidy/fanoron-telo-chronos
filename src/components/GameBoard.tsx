@@ -20,7 +20,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   player1Color,
   player2Color
 }) => {
-  const BOARD_SIZE = 300;
+  const BOARD_SIZE = 400; // Agrandi de 300 à 400
   const GRID_SIZE = BOARD_SIZE / 2;
   
   const getScreenPosition = (pos: Position) => ({
@@ -51,7 +51,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               x2={endScreen.x}
               y2={endScreen.y}
               stroke="#8B7355"
-              strokeWidth="3"
+              strokeWidth="4"
               opacity="0.8"
             />
           );
@@ -71,16 +71,26 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
       return (
         <g key={getPositionKey(pos)}>
-          {/* Intersection de base */}
+          {/* Zone de clic plus large pour améliorer l'UX */}
           <circle
             cx={screenPos.x}
             cy={screenPos.y}
-            r="8"
+            r="25"
+            fill="transparent"
+            className="cursor-pointer"
+            onClick={() => onPositionClick(pos)}
+          />
+          
+          {/* Intersection de base - plus grosse et fixe */}
+          <circle
+            cx={screenPos.x}
+            cy={screenPos.y}
+            r="12"
             fill={piece ? 'transparent' : '#D4C5B9'}
             stroke="#8B7355"
-            strokeWidth="2"
-            className="board-intersection cursor-pointer"
-            onClick={() => onPositionClick(pos)}
+            strokeWidth="3"
+            className="board-intersection"
+            style={{ pointerEvents: 'none' }}
           />
           
           {/* Indicateur de mouvement valide */}
@@ -88,12 +98,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <circle
               cx={screenPos.x}
               cy={screenPos.y}
-              r="12"
+              r="16"
               fill="rgba(74, 144, 226, 0.3)"
               stroke="#4A90E2"
-              strokeWidth="2"
-              className="animate-pulse cursor-pointer"
-              onClick={() => onPositionClick(pos)}
+              strokeWidth="3"
+              className="animate-pulse"
+              style={{ pointerEvents: 'none' }}
             />
           )}
           
@@ -102,14 +112,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <circle
               cx={screenPos.x}
               cy={screenPos.y}
-              r="16"
+              r="20"
               fill={piece.playerId === 1 ? player1Color : player2Color}
               stroke={isSelected ? "#FFD700" : "#fff"}
-              strokeWidth={isSelected ? "4" : "2"}
-              className={`stone-piece cursor-pointer ${isSelected ? 'animate-pulse-glow' : ''}`}
-              onClick={() => onPositionClick(pos)}
+              strokeWidth={isSelected ? "4" : "3"}
+              className={`stone-piece ${isSelected ? 'animate-pulse-glow' : ''}`}
               style={{
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.3))',
+                pointerEvents: 'none'
               }}
             />
           )}
@@ -119,8 +129,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="flex justify-center items-center p-4">
-      <div className="wood-texture p-6 rounded-2xl shadow-xl">
+    <div className="flex justify-center items-center p-6">
+      <div className="wood-texture p-8 rounded-2xl shadow-xl">
         <svg
           width={BOARD_SIZE}
           height={BOARD_SIZE}

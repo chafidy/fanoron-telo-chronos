@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Target, Move, Crown } from 'lucide-react';
+import { Copyright } from './Copyright';
 
 interface GameRulesProps {
   onBack: () => void;
@@ -163,6 +163,8 @@ export const GameRules: React.FC<GameRulesProps> = ({ onBack }) => {
           </CardContent>
         </Card>
       </div>
+      
+      <Copyright />
     </div>
   );
 };
