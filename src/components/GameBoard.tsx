@@ -20,31 +20,25 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   player1Color,
   player2Color
 }) => {
-  // Responsive board sizing
-  const BOARD_SIZE_DESKTOP = 400;
-  const BOARD_SIZE_MOBILE = 280;
-  const GRID_SIZE_DESKTOP = BOARD_SIZE_DESKTOP / 2;
-  const GRID_SIZE_MOBILE = BOARD_SIZE_MOBILE / 2;
+  const BOARD_SIZE = 400; // Agrandi de 300 à 400
+  const GRID_SIZE = BOARD_SIZE / 2;
   
-  const getScreenPosition = (pos: Position, isMobile = false) => {
-    const gridSize = isMobile ? GRID_SIZE_MOBILE : GRID_SIZE_DESKTOP;
-    return {
-      x: pos.x * gridSize,
-      y: pos.y * gridSize
-    };
-  };
+  const getScreenPosition = (pos: Position) => ({
+    x: pos.x * GRID_SIZE,
+    y: pos.y * GRID_SIZE
+  });
 
-  const renderConnections = (isMobile = false) => {
+  const renderConnections = () => {
     const lines: JSX.Element[] = [];
     const drawnConnections = new Set<string>();
 
     VALID_POSITIONS.forEach(pos => {
       const posKey = getPositionKey(pos);
       const connections = CONNECTIONS[posKey] || [];
-      const startScreen = getScreenPosition(pos, isMobile);
+      const startScreen = getScreenPosition(pos);
 
       connections.forEach(connection => {
-        const endScreen = getScreenPosition(connection, isMobile);
+        const endScreen = getScreenPosition(connection);
         const connectionKey = [posKey, getPositionKey(connection)].sort().join('-');
         
         if (!drawnConnections.has(connectionKey)) {
@@ -57,7 +51,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
               x2={endScreen.x}
               y2={endScreen.y}
               stroke="#8B7355"
-              strokeWidth={isMobile ? "3" : "4"}
+              strokeWidth="4"
               opacity="0.8"
             />
           );
@@ -68,38 +62,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
     return lines;
   };
 
-  const renderIntersections = (isMobile = false) => {
-    const clickRadius = isMobile ? "20" : "25";
-    const intersectionRadius = isMobile ? "10" : "12";
-    const validMoveRadius = isMobile ? "14" : "16";
-    const pieceRadius = isMobile ? "16" : "20";
-    
+  const renderIntersections = () => {
     return VALID_POSITIONS.map(pos => {
-      const screenPos = getScreenPosition(pos, isMobile);
+      const screenPos = getScreenPosition(pos);
       const piece = pieces.find(p => p.isPlaced && positionsEqual(p.position, pos));
       const isValidMove = validMoves.some(move => positionsEqual(move, pos));
       const isSelected = selectedPiece && positionsEqual(selectedPiece.position, pos);
 
       return (
         <g key={getPositionKey(pos)}>
-          {/* Zone de clic plus large pour améliorer l'UX mobile */}
+          {/* Zone de clic plus large pour améliorer l'UX */}
           <circle
             cx={screenPos.x}
             cy={screenPos.y}
-            r={clickRadius}
+            r="25"
             fill="transparent"
             className="cursor-pointer"
             onClick={() => onPositionClick(pos)}
           />
           
-          {/* Intersection de base - fixe */}
+          {/* Intersection de base - plus grosse et fixe */}
           <circle
             cx={screenPos.x}
             cy={screenPos.y}
-            r={intersectionRadius}
+            r="12"
             fill={piece ? 'transparent' : '#D4C5B9'}
             stroke="#8B7355"
-            strokeWidth={isMobile ? "2" : "3"}
+            strokeWidth="3"
             className="board-intersection"
             style={{ pointerEvents: 'none' }}
           />
@@ -109,10 +98,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <circle
               cx={screenPos.x}
               cy={screenPos.y}
-              r={validMoveRadius}
+              r="16"
               fill="rgba(74, 144, 226, 0.3)"
               stroke="#4A90E2"
-              strokeWidth={isMobile ? "2" : "3"}
+              strokeWidth="3"
               className="animate-pulse"
               style={{ pointerEvents: 'none' }}
             />
@@ -123,10 +112,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <circle
               cx={screenPos.x}
               cy={screenPos.y}
-              r={pieceRadius}
+              r="20"
               fill={piece.playerId === 1 ? player1Color : player2Color}
               stroke={isSelected ? "#FFD700" : "#fff"}
-              strokeWidth={isSelected ? (isMobile ? "3" : "4") : (isMobile ? "2" : "3")}
+              strokeWidth={isSelected ? "4" : "3"}
               className={`stone-piece ${isSelected ? 'animate-pulse-glow' : ''}`}
               style={{
                 filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.3))',
@@ -140,30 +129,19 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="flex justify-center items-center p-2 sm:p-6">
-      <div className="wood-texture p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl">
-        {/* Desktop SVG */}
+    <div className="flex justify-center items-center p-6">
+      <div className="wood-texture p-8 rounded-2xl shadow-xl">
         <svg
-          width={BOARD_SIZE_DESKTOP}
-          height={BOARD_SIZE_DESKTOP}
-          viewBox={`0 0 ${BOARD_SIZE_DESKTOP} ${BOARD_SIZE_DESKTOP}`}
-          className="bg-transparent hidden sm:block"
+          width={BOARD_SIZE}
+          height={BOARD_SIZE}
+          viewBox={`0 0 ${BOARD_SIZE} ${BOARD_SIZE}`}
+          className="bg-transparent"
         >
-          {/* Connexions et intersections desktop */}
-          {renderConnections(false)}
-          {renderIntersections(false)}
-        </svg>
-        
-        {/* Mobile SVG */}
-        <svg
-          width={BOARD_SIZE_MOBILE}
-          height={BOARD_SIZE_MOBILE}
-          viewBox={`0 0 ${BOARD_SIZE_MOBILE} ${BOARD_SIZE_MOBILE}`}
-          className="bg-transparent block sm:hidden"
-        >
-          {/* Connexions et intersections mobile */}
-          {renderConnections(true)}
-          {renderIntersections(true)}
+          {/* Connexions (lignes du plateau) */}
+          {renderConnections()}
+          
+          {/* Intersections et pions */}
+          {renderIntersections()}
         </svg>
       </div>
     </div>

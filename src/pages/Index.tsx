@@ -73,6 +73,7 @@ const Index = () => {
   const [turnCount, setTurnCount] = useState<number>(0);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
 
+  // Chargement initial
   useEffect(() => {
     const savedPlayers = loadPlayerSettings();
     if (savedPlayers.length === 2) {
@@ -85,15 +86,17 @@ const Index = () => {
     setGameHistory(loadGameHistory());
   }, []);
 
+  // Initialisation d'une nouvelle partie
   const initializeGame = useCallback(() => {
     const pieces: GamePiece[] = [];
     
+    // Créer 3 pions pour chaque joueur
     for (let playerId = 1; playerId <= 2; playerId++) {
       for (let i = 0; i < 3; i++) {
         pieces.push({
           id: `p${playerId}-${i}`,
           playerId: playerId as 1 | 2,
-          position: { x: -1, y: -1 },
+          position: { x: -1, y: -1 }, // Position hors plateau
           isPlaced: false
         });
       }
@@ -115,6 +118,7 @@ const Index = () => {
     setCurrentScreen('game');
   }, []);
 
+  // Gestion des clics sur le plateau
   const handlePositionClick = useCallback((position: Position) => {
     if (!gameState || gameState.status !== 'playing') return;
 
@@ -125,6 +129,7 @@ const Index = () => {
     );
 
     if (gameState.phase === 'placement') {
+      // Phase de placement
       if (isPositionOccupied) {
         toast({
           title: "Position occupée",
@@ -143,6 +148,7 @@ const Index = () => {
           : piece
       );
 
+      // Vérifier si tous les pions sont placés
       const allPlaced = updatedPieces.every(p => p.isPlaced);
       const nextPlayer = gameState.currentPlayer === 1 ? 2 : 1;
 
@@ -156,13 +162,16 @@ const Index = () => {
       setTurnCount(prev => prev + 1);
 
     } else {
+      // Phase de mouvement
       const clickedPiece = gameState.pieces.find(p =>
         p.isPlaced && positionsEqual(p.position, position)
       );
 
       if (clickedPiece && clickedPiece.playerId === gameState.currentPlayer) {
+        // Sélectionner un pion du joueur actuel
         setSelectedPiece(clickedPiece);
       } else if (selectedPiece && !isPositionOccupied) {
+        // Déplacer le pion sélectionné
         if (canMoveTo(selectedPiece.position, position, gameState.pieces)) {
           const updatedPieces = gameState.pieces.map(piece =>
             piece.id === selectedPiece.id
@@ -198,11 +207,13 @@ const Index = () => {
     }
   }, [gameState, selectedPiece, toast]);
 
+  // Fin de partie
   const handleGameEnd = useCallback((winner: 1 | 2) => {
     const winnerPlayer = players.find(p => p.id === winner)!;
     const loserPlayer = players.find(p => p.id !== winner)!;
     const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
 
+    // Mettre à jour le score
     const updatedPlayers = players.map(player =>
       player.id === winner ? { ...player, score: player.score + 1 } : player
     );
@@ -212,6 +223,7 @@ const Index = () => {
       updatedPlayers.find(p => p.id === 2)!.score
     );
 
+    // Ajouter à l'historique
     addGameToHistory({
       date: new Date(),
       winner: winnerPlayer,
@@ -221,6 +233,7 @@ const Index = () => {
     });
     setGameHistory(loadGameHistory());
 
+    // Afficher la modale de victoire
     setShowVictoryModal(true);
 
     toast({
@@ -229,6 +242,7 @@ const Index = () => {
     });
   }, [players, gameStartTime, turnCount, toast]);
 
+  // Gestion du timeout
   const handleTimeUp = useCallback(() => {
     if (!gameState) return;
     
@@ -244,6 +258,7 @@ const Index = () => {
     handleGameEnd(winner);
   }, [gameState, players, handleGameEnd, toast]);
 
+  // Actions du jeu
   const handlePlayersUpdate = (updatedPlayers: Player[]) => {
     setPlayers(updatedPlayers);
     savePlayerSettings(updatedPlayers);
@@ -268,6 +283,7 @@ const Index = () => {
     });
   };
 
+  // Calcul des mouvements valides
   const getValidMoves = useCallback((): Position[] => {
     if (!gameState || !selectedPiece || gameState.phase !== 'movement') {
       return [];
@@ -278,6 +294,7 @@ const Index = () => {
       .map(move => move.to);
   }, [gameState, selectedPiece]);
 
+  // Rendu des écrans
   const renderScreen = () => {
     switch (currentScreen) {
       case 'customization':
@@ -310,39 +327,11 @@ const Index = () => {
         const otherPlayerInfo = players.find(p => p.id !== gameState.currentPlayer)!;
 
         return (
-          <div className="min-h-screen p-2 sm:p-4">
-            <div className="max-w-6xl mx-auto mb-4 sm:mb-6">
-              {/* Mobile layout - stacked */}
-              <div className="block sm:hidden space-y-3 mb-4">
-                <Card className="bg-white/90 backdrop-blur-sm">
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: currentPlayerInfo.color }}
-                        />
-                        <div>
-                          <div className="font-semibold text-sm">{currentPlayerInfo.name}</div>
-                          <div className="text-xs text-gray-600">
-                            {gameState.phase === 'placement' ? 'Place tes pions' : 'À ton tour'}
-                          </div>
-                        </div>
-                      </div>
-                      <Timer
-                        startTime={gameState.turnStartTime}
-                        timeLimit={gameSettings.turnTimeLimit}
-                        onTimeUp={handleTimeUp}
-                        isActive={gameState.status === 'playing'}
-                        className="text-sm"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Desktop layout - grid */}
-              <div className="hidden sm:grid lg:grid-cols-3 gap-4 mb-4">
+          <div className="min-h-screen p-4">
+            {/* Header avec informations de jeu */}
+            <div className="max-w-6xl mx-auto mb-6">
+              <div className="grid lg:grid-cols-3 gap-4 mb-4">
+                {/* Joueur actuel */}
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
@@ -363,6 +352,7 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
+                {/* Timer */}
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4 flex justify-center">
                     <Timer
@@ -375,6 +365,7 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
+                {/* Phase de jeu */}
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4 text-center">
                     <div className="font-semibold text-lg">
@@ -387,127 +378,83 @@ const Index = () => {
                 </Card>
               </div>
 
-              {/* Mobile buttons - more compact */}
-              <div className="flex flex-wrap justify-center gap-2 mb-4 sm:gap-3">
+              {/* Actions */}
+              <div className="flex justify-center gap-3 mb-4">
                 <Button
                   onClick={() => setCurrentScreen('menu')}
                   variant="outline"
                   size="sm"
-                  className="text-xs sm:text-sm"
                 >
-                  <Home className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <Home className="w-4 h-4 mr-2" />
                   Menu
                 </Button>
                 <Button
                   onClick={initializeGame}
                   variant="outline"
                   size="sm"
-                  className="text-xs sm:text-sm"
                 >
-                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  Nouvelle
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Nouvelle partie
                 </Button>
                 <Button
                   onClick={() => setCurrentScreen('rules')}
                   variant="outline"
                   size="sm"
-                  className="text-xs sm:text-sm"
                 >
-                  <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <BookOpen className="w-4 h-4 mr-2" />
                   Règles
                 </Button>
               </div>
             </div>
 
-            {/* Game layout - responsive */}
-            <div className="max-w-6xl mx-auto">
-              {/* Mobile layout - stacked */}
-              <div className="block lg:hidden space-y-4">
-                <div className="flex justify-center">
-                  <GameBoard
-                    pieces={gameState.pieces}
-                    onPositionClick={handlePositionClick}
-                    selectedPiece={selectedPiece}
-                    validMoves={getValidMoves()}
-                    player1Color={players[0].color}
-                    player2Color={players[1].color}
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <ScoreBoard
-                    players={players}
-                    onResetScores={handleResetScores}
-                  />
-                  
-                  <Card className="bg-white/80 backdrop-blur-sm">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-3">Adversaire</h3>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: otherPlayerInfo.color }}
-                        />
-                        <div>
-                          <div className="font-medium">{otherPlayerInfo.name}</div>
-                          <div className="text-sm text-gray-600">
-                            Score: {otherPlayerInfo.score}
-                          </div>
-                        </div>
-                        {otherPlayerInfo.avatar && (
-                          <span className="text-lg ml-auto">{otherPlayerInfo.avatar}</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+            {/* Zone de jeu */}
+            <div className="max-w-6xl mx-auto grid lg:grid-cols-4 gap-6">
+              {/* Tableau des scores */}
+              <div className="lg:col-span-1">
+                <ScoreBoard
+                  players={players}
+                  onResetScores={handleResetScores}
+                />
               </div>
 
-              {/* Desktop layout - grid */}
-              <div className="hidden lg:grid lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-1">
-                  <ScoreBoard
-                    players={players}
-                    onResetScores={handleResetScores}
-                  />
-                </div>
+              {/* Plateau de jeu */}
+              <div className="lg:col-span-2">
+                <GameBoard
+                  pieces={gameState.pieces}
+                  onPositionClick={handlePositionClick}
+                  selectedPiece={selectedPiece}
+                  validMoves={getValidMoves()}
+                  player1Color={players[0].color}
+                  player2Color={players[1].color}
+                />
+              </div>
 
-                <div className="lg:col-span-2">
-                  <GameBoard
-                    pieces={gameState.pieces}
-                    onPositionClick={handlePositionClick}
-                    selectedPiece={selectedPiece}
-                    validMoves={getValidMoves()}
-                    player1Color={players[0].color}
-                    player2Color={players[1].color}
-                  />
-                </div>
-
-                <div className="lg:col-span-1">
-                  <Card className="bg-white/80 backdrop-blur-sm">
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-3">Adversaire</h3>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: otherPlayerInfo.color }}
-                        />
-                        <div>
-                          <div className="font-medium">{otherPlayerInfo.name}</div>
-                          <div className="text-sm text-gray-600">
-                            Score: {otherPlayerInfo.score}
-                          </div>
+              {/* Informations adversaire */}
+              <div className="lg:col-span-1">
+                <Card className="bg-white/80 backdrop-blur-sm">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-3">Adversaire</h3>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                        style={{ backgroundColor: otherPlayerInfo.color }}
+                      />
+                      <div>
+                        <div className="font-medium">{otherPlayerInfo.name}</div>
+                        <div className="text-sm text-gray-600">
+                          Score: {otherPlayerInfo.score}
                         </div>
-                        {otherPlayerInfo.avatar && (
-                          <span className="text-lg ml-auto">{otherPlayerInfo.avatar}</span>
-                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                      {otherPlayerInfo.avatar && (
+                        <span className="text-lg ml-auto">{otherPlayerInfo.avatar}</span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
+            {/* Modale de victoire */}
             {showVictoryModal && gameState.winner && (
               <VictoryModal
                 isOpen={showVictoryModal}
@@ -528,26 +475,26 @@ const Index = () => {
 
       default: // menu
         return (
-          <div className="min-h-screen flex items-center justify-center p-2 sm:p-4">
-            <div className="max-w-2xl mx-auto text-center space-y-6 sm:space-y-8">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="max-w-2xl mx-auto text-center space-y-8">
+              {/* Logo et titre */}
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <img 
-                  src="/lovable-uploads/logo-fanoron-telo.png"
-                  alt="Fanoron-telo"
-                  className="mx-auto mb-2 max-w-xs sm:max-w-md w-full h-auto"
-                />
-                <p className="text-lg sm:text-xl text-gray-600">
+                <h1 className="text-6xl font-bold text-gray-800 mb-4 font-comfortaa">
+                  Fanoron-telo
+                </h1>
+                <p className="text-xl text-gray-600 mb-2">
                   Jeu traditionnel malgache
                 </p>
-                <p className="text-sm sm:text-base text-gray-500 mt-1">
+                <p className="text-gray-500">
                   Alignez vos 3 pions pour remporter la victoire
                 </p>
               </motion.div>
 
+              {/* Scores actuels */}
               {players.some(p => p.score > 0) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -555,20 +502,20 @@ const Index = () => {
                   transition={{ delay: 0.2, duration: 0.6 }}
                 >
                   <Card className="bg-white/90 backdrop-blur-sm">
-                    <CardContent className="p-3 sm:p-4">
-                      <h3 className="font-semibold mb-3 flex items-center justify-center gap-2 text-sm sm:text-base">
-                        <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-3 flex items-center justify-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-600" />
                         Scores actuels
                       </h3>
-                      <div className="flex justify-center gap-6 sm:gap-8">
+                      <div className="flex justify-center gap-8">
                         {players.map(player => (
                           <div key={player.id} className="text-center">
                             <div
-                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white shadow-sm mx-auto mb-2"
+                              className="w-8 h-8 rounded-full border-2 border-white shadow-sm mx-auto mb-2"
                               style={{ backgroundColor: player.color }}
                             />
-                            <div className="font-medium text-sm sm:text-base">{player.name}</div>
-                            <div className="text-xl sm:text-2xl font-bold text-gray-700">
+                            <div className="font-medium">{player.name}</div>
+                            <div className="text-2xl font-bold text-gray-700">
                               {player.score}
                             </div>
                           </div>
@@ -579,21 +526,22 @@ const Index = () => {
                 </motion.div>
               )}
 
+              {/* Menu principal */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
-                className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+                className="grid sm:grid-cols-2 gap-4"
               >
                 <Button
                   onClick={() => setCurrentScreen('customization')}
                   size="lg"
-                  className="h-14 sm:h-16 bg-wood hover:bg-wood-dark text-white shadow-lg"
+                  className="h-16 bg-wood hover:bg-wood-dark text-white shadow-lg"
                 >
-                  <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  <Play className="w-6 h-6 mr-3" />
                   <div className="text-left">
-                    <div className="font-semibold text-sm sm:text-base">Jouer</div>
-                    <div className="text-xs sm:text-sm opacity-90">Nouvelle partie</div>
+                    <div className="font-semibold">Jouer</div>
+                    <div className="text-sm opacity-90">Nouvelle partie</div>
                   </div>
                 </Button>
 
@@ -601,12 +549,12 @@ const Index = () => {
                   onClick={() => setCurrentScreen('customization')}
                   variant="outline"
                   size="lg"
-                  className="h-14 sm:h-16 bg-white/80 backdrop-blur-sm"
+                  className="h-16 bg-white/80 backdrop-blur-sm"
                 >
-                  <Users className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  <Users className="w-6 h-6 mr-3" />
                   <div className="text-left">
-                    <div className="font-semibold text-sm sm:text-base">Personnaliser</div>
-                    <div className="text-xs sm:text-sm opacity-70">Joueurs & couleurs</div>
+                    <div className="font-semibold">Personnaliser</div>
+                    <div className="text-sm opacity-70">Joueurs & couleurs</div>
                   </div>
                 </Button>
 
@@ -614,12 +562,12 @@ const Index = () => {
                   onClick={() => setCurrentScreen('history')}
                   variant="outline"
                   size="lg"
-                  className="h-14 sm:h-16 bg-white/80 backdrop-blur-sm"
+                  className="h-16 bg-white/80 backdrop-blur-sm"
                 >
-                  <History className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  <History className="w-6 h-6 mr-3" />
                   <div className="text-left">
-                    <div className="font-semibold text-sm sm:text-base">Historique</div>
-                    <div className="text-xs sm:text-sm opacity-70">{gameHistory.length} parties</div>
+                    <div className="font-semibold">Historique</div>
+                    <div className="text-sm opacity-70">{gameHistory.length} parties</div>
                   </div>
                 </Button>
 
@@ -627,12 +575,12 @@ const Index = () => {
                   onClick={() => setCurrentScreen('rules')}
                   variant="outline"
                   size="lg"
-                  className="h-14 sm:h-16 bg-white/80 backdrop-blur-sm"
+                  className="h-16 bg-white/80 backdrop-blur-sm"
                 >
-                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  <BookOpen className="w-6 h-6 mr-3" />
                   <div className="text-left">
-                    <div className="font-semibold text-sm sm:text-base">Règles</div>
-                    <div className="text-xs sm:text-sm opacity-70">Comment jouer</div>
+                    <div className="font-semibold">Règles</div>
+                    <div className="text-sm opacity-70">Comment jouer</div>
                   </div>
                 </Button>
               </motion.div>
