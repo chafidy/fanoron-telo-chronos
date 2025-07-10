@@ -536,14 +536,14 @@ const Index = () => {
                 transition={{ duration: 0.6 }}
               >
                 <img 
-                  src="/lovable-uploads/3d15f755-165e-4895-9a3c-997698489bba.png"
+                  src="/lovable-uploads/logo-fanoron-telo.png"
                   alt="Fanoron-telo"
-                  className="mx-auto mb-4 max-w-xs sm:max-w-md w-full h-auto"
+                  className="mx-auto mb-2 max-w-xs sm:max-w-md w-full h-auto"
                 />
-                <p className="text-lg sm:text-xl text-gray-600 mb-2">
+                <p className="text-lg sm:text-xl text-gray-600">
                   Jeu traditionnel malgache
                 </p>
-                <p className="text-sm sm:text-base text-gray-500">
+                <p className="text-sm sm:text-base text-gray-500 mt-1">
                   Alignez vos 3 pions pour remporter la victoire
                 </p>
               </motion.div>
