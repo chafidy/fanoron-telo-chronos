@@ -47,9 +47,9 @@ export const Timer: React.FC<TimerProps> = ({
   const isUrgent = timeLimit && remainingSeconds !== null && remainingSeconds <= 10;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <Clock className="w-4 h-4" />
-      <span className={`font-mono text-lg ${isUrgent ? 'text-red-500 timer-urgent' : ''}`}>
+    <div className={`flex items-center gap-1 sm:gap-2 ${className}`}>
+      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+      <span className={`font-mono text-sm sm:text-lg ${isUrgent ? 'text-red-500 timer-urgent' : ''}`}>
         {timeLimit && remainingSeconds !== null
           ? formatTime(remainingSeconds)
           : formatTime(elapsedSeconds)
