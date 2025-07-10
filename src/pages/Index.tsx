@@ -73,7 +73,6 @@ const Index = () => {
   const [turnCount, setTurnCount] = useState<number>(0);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
 
-  // Chargement initial
   useEffect(() => {
     const savedPlayers = loadPlayerSettings();
     if (savedPlayers.length === 2) {
@@ -86,17 +85,15 @@ const Index = () => {
     setGameHistory(loadGameHistory());
   }, []);
 
-  // Initialisation d'une nouvelle partie
   const initializeGame = useCallback(() => {
     const pieces: GamePiece[] = [];
     
-    // Créer 3 pions pour chaque joueur
     for (let playerId = 1; playerId <= 2; playerId++) {
       for (let i = 0; i < 3; i++) {
         pieces.push({
           id: `p${playerId}-${i}`,
           playerId: playerId as 1 | 2,
-          position: { x: -1, y: -1 }, // Position hors plateau
+          position: { x: -1, y: -1 },
           isPlaced: false
         });
       }
@@ -118,7 +115,6 @@ const Index = () => {
     setCurrentScreen('game');
   }, []);
 
-  // Gestion des clics sur le plateau
   const handlePositionClick = useCallback((position: Position) => {
     if (!gameState || gameState.status !== 'playing') return;
 
@@ -129,7 +125,6 @@ const Index = () => {
     );
 
     if (gameState.phase === 'placement') {
-      // Phase de placement
       if (isPositionOccupied) {
         toast({
           title: "Position occupée",
@@ -148,7 +143,6 @@ const Index = () => {
           : piece
       );
 
-      // Vérifier si tous les pions sont placés
       const allPlaced = updatedPieces.every(p => p.isPlaced);
       const nextPlayer = gameState.currentPlayer === 1 ? 2 : 1;
 
@@ -162,16 +156,13 @@ const Index = () => {
       setTurnCount(prev => prev + 1);
 
     } else {
-      // Phase de mouvement
       const clickedPiece = gameState.pieces.find(p =>
         p.isPlaced && positionsEqual(p.position, position)
       );
 
       if (clickedPiece && clickedPiece.playerId === gameState.currentPlayer) {
-        // Sélectionner un pion du joueur actuel
         setSelectedPiece(clickedPiece);
       } else if (selectedPiece && !isPositionOccupied) {
-        // Déplacer le pion sélectionné
         if (canMoveTo(selectedPiece.position, position, gameState.pieces)) {
           const updatedPieces = gameState.pieces.map(piece =>
             piece.id === selectedPiece.id
@@ -207,13 +198,11 @@ const Index = () => {
     }
   }, [gameState, selectedPiece, toast]);
 
-  // Fin de partie
   const handleGameEnd = useCallback((winner: 1 | 2) => {
     const winnerPlayer = players.find(p => p.id === winner)!;
     const loserPlayer = players.find(p => p.id !== winner)!;
     const gameDuration = Math.floor((Date.now() - gameStartTime) / 1000);
 
-    // Mettre à jour le score
     const updatedPlayers = players.map(player =>
       player.id === winner ? { ...player, score: player.score + 1 } : player
     );
@@ -223,7 +212,6 @@ const Index = () => {
       updatedPlayers.find(p => p.id === 2)!.score
     );
 
-    // Ajouter à l'historique
     addGameToHistory({
       date: new Date(),
       winner: winnerPlayer,
@@ -233,7 +221,6 @@ const Index = () => {
     });
     setGameHistory(loadGameHistory());
 
-    // Afficher la modale de victoire
     setShowVictoryModal(true);
 
     toast({
@@ -242,7 +229,6 @@ const Index = () => {
     });
   }, [players, gameStartTime, turnCount, toast]);
 
-  // Gestion du timeout
   const handleTimeUp = useCallback(() => {
     if (!gameState) return;
     
@@ -258,7 +244,6 @@ const Index = () => {
     handleGameEnd(winner);
   }, [gameState, players, handleGameEnd, toast]);
 
-  // Actions du jeu
   const handlePlayersUpdate = (updatedPlayers: Player[]) => {
     setPlayers(updatedPlayers);
     savePlayerSettings(updatedPlayers);
@@ -283,7 +268,6 @@ const Index = () => {
     });
   };
 
-  // Calcul des mouvements valides
   const getValidMoves = useCallback((): Position[] => {
     if (!gameState || !selectedPiece || gameState.phase !== 'movement') {
       return [];
@@ -294,7 +278,6 @@ const Index = () => {
       .map(move => move.to);
   }, [gameState, selectedPiece]);
 
-  // Rendu des écrans
   const renderScreen = () => {
     switch (currentScreen) {
       case 'customization':
@@ -328,10 +311,8 @@ const Index = () => {
 
         return (
           <div className="min-h-screen p-4">
-            {/* Header avec informations de jeu */}
             <div className="max-w-6xl mx-auto mb-6">
               <div className="grid lg:grid-cols-3 gap-4 mb-4">
-                {/* Joueur actuel */}
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
@@ -352,7 +333,6 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                {/* Timer */}
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4 flex justify-center">
                     <Timer
@@ -365,7 +345,6 @@ const Index = () => {
                   </CardContent>
                 </Card>
 
-                {/* Phase de jeu */}
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4 text-center">
                     <div className="font-semibold text-lg">
@@ -378,7 +357,6 @@ const Index = () => {
                 </Card>
               </div>
 
-              {/* Actions */}
               <div className="flex justify-center gap-3 mb-4">
                 <Button
                   onClick={() => setCurrentScreen('menu')}
@@ -407,9 +385,7 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Zone de jeu */}
             <div className="max-w-6xl mx-auto grid lg:grid-cols-4 gap-6">
-              {/* Tableau des scores */}
               <div className="lg:col-span-1">
                 <ScoreBoard
                   players={players}
@@ -417,7 +393,6 @@ const Index = () => {
                 />
               </div>
 
-              {/* Plateau de jeu */}
               <div className="lg:col-span-2">
                 <GameBoard
                   pieces={gameState.pieces}
@@ -429,7 +404,6 @@ const Index = () => {
                 />
               </div>
 
-              {/* Informations adversaire */}
               <div className="lg:col-span-1">
                 <Card className="bg-white/80 backdrop-blur-sm">
                   <CardContent className="p-4">
@@ -454,7 +428,6 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Modale de victoire */}
             {showVictoryModal && gameState.winner && (
               <VictoryModal
                 isOpen={showVictoryModal}
@@ -477,15 +450,16 @@ const Index = () => {
         return (
           <div className="min-h-screen flex items-center justify-center p-4">
             <div className="max-w-2xl mx-auto text-center space-y-8">
-              {/* Logo et titre */}
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
               >
-                <h1 className="text-6xl font-bold text-gray-800 mb-4 font-comfortaa">
-                  Fanoron-telo
-                </h1>
+                <img 
+                  src="/lovable-uploads/3d15f755-165e-4895-9a3c-997698489bba.png"
+                  alt="Fanoron-telo"
+                  className="mx-auto mb-4 max-w-md w-full h-auto"
+                />
                 <p className="text-xl text-gray-600 mb-2">
                   Jeu traditionnel malgache
                 </p>
@@ -494,7 +468,6 @@ const Index = () => {
                 </p>
               </motion.div>
 
-              {/* Scores actuels */}
               {players.some(p => p.score > 0) && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -526,7 +499,6 @@ const Index = () => {
                 </motion.div>
               )}
 
-              {/* Menu principal */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
