@@ -6,6 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Player } from '../types/game';
 import { Trophy, Clock, RotateCcw, Home } from 'lucide-react';
 
+// Import avatar images
+import avatarBusinessMan from '../assets/avatar-business-man.png';
+import avatarOrangeHairWoman from '../assets/avatar-orange-hair-woman.png';
+import avatarStripedBoy from '../assets/avatar-striped-boy.png';
+import avatarBlondeWoman from '../assets/avatar-blonde-woman.png';
+import avatarPunkMan from '../assets/avatar-punk-man.png';
+import avatarBeanieMan from '../assets/avatar-beanie-man.png';
+
+const AVATAR_OPTIONS = [
+  { id: 'business-man', src: avatarBusinessMan, alt: 'Homme d\'affaires' },
+  { id: 'orange-hair-woman', src: avatarOrangeHairWoman, alt: 'Femme aux cheveux orange' },
+  { id: 'striped-boy', src: avatarStripedBoy, alt: 'Garçon à rayures' },
+  { id: 'blonde-woman', src: avatarBlondeWoman, alt: 'Femme blonde' },
+  { id: 'punk-man', src: avatarPunkMan, alt: 'Homme punk' },
+  { id: 'beanie-man', src: avatarBeanieMan, alt: 'Homme au bonnet' }
+];
+
 interface VictoryModalProps {
   isOpen: boolean;
   winner: Player;
@@ -63,7 +80,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
       <DialogContent className="sm:max-w-md bg-gradient-to-br from-yellow-100 to-orange-100 border-yellow-300">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-gray-800">
-            🎉 Victoire ! 🎉
+            Victoire !
           </DialogTitle>
         </DialogHeader>
         
@@ -76,9 +93,11 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 style={{ backgroundColor: winner.color }}
               />
               {winner.avatar && (
-                <div className="absolute -top-2 -right-2 text-2xl bg-white rounded-full p-1 border-2 border-yellow-400">
-                  {winner.avatar}
-                </div>
+                <img 
+                  src={AVATAR_OPTIONS.find(a => a.id === winner.avatar)?.src || winner.avatar} 
+                  alt="Avatar du gagnant"
+                  className="absolute inset-0 w-20 h-20 object-cover rounded-full border-4 border-yellow-400 shadow-lg animate-bounce-in"
+                />
               )}
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
                 <Trophy className="w-8 h-8 text-yellow-500" />

@@ -18,6 +18,23 @@ import {
   GameHistory as GameHistoryType,
   GameSettings 
 } from '../types/game';
+
+// Import avatar images
+import avatarBusinessMan from '../assets/avatar-business-man.png';
+import avatarOrangeHairWoman from '../assets/avatar-orange-hair-woman.png';
+import avatarStripedBoy from '../assets/avatar-striped-boy.png';
+import avatarBlondeWoman from '../assets/avatar-blonde-woman.png';
+import avatarPunkMan from '../assets/avatar-punk-man.png';
+import avatarBeanieMan from '../assets/avatar-beanie-man.png';
+
+const AVATAR_OPTIONS = [
+  { id: 'business-man', src: avatarBusinessMan, alt: 'Homme d\'affaires' },
+  { id: 'orange-hair-woman', src: avatarOrangeHairWoman, alt: 'Femme aux cheveux orange' },
+  { id: 'striped-boy', src: avatarStripedBoy, alt: 'Garçon à rayures' },
+  { id: 'blonde-woman', src: avatarBlondeWoman, alt: 'Femme blonde' },
+  { id: 'punk-man', src: avatarPunkMan, alt: 'Homme punk' },
+  { id: 'beanie-man', src: avatarBeanieMan, alt: 'Homme au bonnet' }
+];
 import { 
   checkWinner, 
   canMoveTo, 
@@ -237,7 +254,7 @@ const Index = () => {
     setShowVictoryModal(true);
 
     toast({
-      title: `🎉 ${winnerPlayer.name} gagne !`,
+      title: `${winnerPlayer.name} gagne !`,
       description: `Partie terminée en ${Math.floor(gameDuration / 60)}:${(gameDuration % 60).toString().padStart(2, '0')}`,
     });
   }, [players, gameStartTime, turnCount, toast]);
@@ -335,19 +352,25 @@ const Index = () => {
                 <Card className="bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div
-                        className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white shadow-sm"
-                        style={{ backgroundColor: currentPlayerInfo.color }}
-                      />
+                      <div className="relative">
+                        <div
+                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white shadow-sm"
+                          style={{ backgroundColor: currentPlayerInfo.color }}
+                        />
+                        {currentPlayerInfo.avatar && (
+                          <img 
+                            src={AVATAR_OPTIONS.find(a => a.id === currentPlayerInfo.avatar)?.src || currentPlayerInfo.avatar} 
+                            alt="Avatar"
+                            className="absolute inset-0 w-6 h-6 sm:w-8 sm:h-8 object-cover rounded-full"
+                          />
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm sm:text-base truncate">{currentPlayerInfo.name}</div>
                         <div className="text-xs sm:text-sm text-gray-600">
                           {gameState.phase === 'placement' ? 'Place tes pions' : 'À ton tour'}
                         </div>
                       </div>
-                      {currentPlayerInfo.avatar && (
-                        <span className="text-base sm:text-lg">{currentPlayerInfo.avatar}</span>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -438,19 +461,25 @@ const Index = () => {
                     <CardContent className="p-3">
                       <h3 className="font-semibold mb-2 text-sm">Adversaire</h3>
                       <div className="flex items-center gap-2">
-                        <div
-                          className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: otherPlayerInfo.color }}
-                        />
+                        <div className="relative">
+                          <div
+                            className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                            style={{ backgroundColor: otherPlayerInfo.color }}
+                          />
+                          {otherPlayerInfo.avatar && (
+                            <img 
+                              src={AVATAR_OPTIONS.find(a => a.id === otherPlayerInfo.avatar)?.src || otherPlayerInfo.avatar} 
+                              alt="Avatar"
+                              className="absolute inset-0 w-6 h-6 object-cover rounded-full"
+                            />
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm truncate">{otherPlayerInfo.name}</div>
                           <div className="text-xs text-gray-600">
                             Score: {otherPlayerInfo.score}
                           </div>
                         </div>
-                        {otherPlayerInfo.avatar && (
-                          <span className="text-sm">{otherPlayerInfo.avatar}</span>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -485,19 +514,25 @@ const Index = () => {
                     <CardContent className="p-4">
                       <h3 className="font-semibold mb-3">Adversaire</h3>
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: otherPlayerInfo.color }}
-                        />
+                        <div className="relative">
+                          <div
+                            className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                            style={{ backgroundColor: otherPlayerInfo.color }}
+                          />
+                          {otherPlayerInfo.avatar && (
+                            <img 
+                              src={AVATAR_OPTIONS.find(a => a.id === otherPlayerInfo.avatar)?.src || otherPlayerInfo.avatar} 
+                              alt="Avatar"
+                              className="absolute inset-0 w-8 h-8 object-cover rounded-full"
+                            />
+                          )}
+                        </div>
                         <div>
                           <div className="font-medium">{otherPlayerInfo.name}</div>
                           <div className="text-sm text-gray-600">
                             Score: {otherPlayerInfo.score}
                           </div>
                         </div>
-                        {otherPlayerInfo.avatar && (
-                          <span className="text-lg ml-auto">{otherPlayerInfo.avatar}</span>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
