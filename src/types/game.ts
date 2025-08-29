@@ -1,12 +1,3 @@
-
-export interface Player {
-  id: 1 | 2;
-  name: string;
-  color: string;
-  avatar?: string;
-  score: number;
-}
-
 export interface Position {
   x: number;
   y: number;
@@ -19,21 +10,27 @@ export interface GamePiece {
   isPlaced: boolean;
 }
 
-export type GamePhase = 'placement' | 'movement';
-export type GameStatus = 'playing' | 'won' | 'draw';
+export interface Player {
+  id: 1 | 2;
+  name: string;
+  color: string;
+  score: number;
+  avatar?: string;
+  isAI?: boolean;
+}
 
 export interface GameState {
-  phase: GamePhase;
-  status: GameStatus;
+  phase: 'placement' | 'movement';
+  status: 'playing' | 'won';
   currentPlayer: 1 | 2;
   pieces: GamePiece[];
   winner?: 1 | 2;
   turnStartTime: number;
   totalGameTime: number;
+  gameMode?: 'human' | 'ai';
 }
 
 export interface GameHistory {
-  id: string;
   date: Date;
   winner: Player;
   loser: Player;
@@ -42,6 +39,11 @@ export interface GameHistory {
 }
 
 export interface GameSettings {
-  turnTimeLimit?: number; // en secondes, undefined = pas de limite
-  maxGameTime?: number; // en minutes
+  turnTimeLimit: number;
+}
+
+export interface ValidMove {
+  piece: GamePiece;
+  from: Position;
+  to: Position;
 }

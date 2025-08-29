@@ -6,6 +6,7 @@ import { GameBoard } from '../components/GameBoard';
 import { Timer } from '../components/Timer';
 import { ScoreBoard } from '../components/ScoreBoard';
 import { PlayerCustomization } from '../components/PlayerCustomization';
+import { GameModeSelection } from '../components/GameModeSelection';
 import { GameHistory } from '../components/GameHistory';
 import { GameRules } from '../components/GameRules';
 import { VictoryModal } from '../components/VictoryModal';
@@ -66,13 +67,23 @@ import {
   Trophy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getAIPlacementMove, getAIMovementMove, AI_MOVE_DELAY } from '../utils/aiLogic';
 
-type GameScreen = 'menu' | 'customization' | 'game' | 'history' | 'rules';
+type GameScreen = 'menu' | 'mode-selection' | 'customization' | 'game' | 'history' | 'rules';
 
 const DEFAULT_PLAYERS: Player[] = [
   { id: 1, name: 'Joueur 1', color: '#FA7070', score: 0 },
   { id: 2, name: 'Joueur 2', color: '#4A90E2', score: 0 }
 ];
+
+const AI_PLAYER: Player = {
+  id: 2,
+  name: 'Robot',
+  color: '#9C27B0',
+  score: 0,
+  isAI: true,
+  avatar: 'business-man'
+};
 
 const DEFAULT_SETTINGS: GameSettings = {
   turnTimeLimit: 60, // 60 secondes par défaut
@@ -81,6 +92,7 @@ const DEFAULT_SETTINGS: GameSettings = {
 const Index = () => {
   const { toast } = useToast();
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('menu');
+  const [gameMode, setGameMode] = useState<'human' | 'ai'>('human');
   const [players, setPlayers] = useState<Player[]>(DEFAULT_PLAYERS);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [selectedPiece, setSelectedPiece] = useState<GamePiece | null>(null);
@@ -89,6 +101,7 @@ const Index = () => {
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [turnCount, setTurnCount] = useState<number>(0);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
+  const [isAIThinking, setIsAIThinking] = useState(false);
 
   // Chargement initial
   useEffect(() => {
@@ -104,8 +117,9 @@ const Index = () => {
   }, []);
 
   // Initialisation d'une nouvelle partie
-  const initializeGame = useCallback(() => {
+  const initializeGame = useCallback((selectedGameMode?: 'human' | 'ai') => {
     const pieces: GamePiece[] = [];
+    const mode = selectedGameMode || gameMode;
     
     // Créer 3 pions pour chaque joueur
     for (let playerId = 1; playerId <= 2; playerId++) {
@@ -125,7 +139,8 @@ const Index = () => {
       currentPlayer: 1,
       pieces,
       turnStartTime: Date.now(),
-      totalGameTime: 0
+      totalGameTime: 0,
+      gameMode: mode
     };
 
     setGameState(newGameState);
@@ -133,11 +148,44 @@ const Index = () => {
     setGameStartTime(Date.now());
     setTurnCount(0);
     setCurrentScreen('game');
-  }, []);
+  }, [gameMode]);
+
+  // Logique de l'IA
+  useEffect(() => {
+    if (!gameState || gameState.status !== 'playing' || isAIThinking) return;
+    
+    const currentPlayer = players.find(p => p.id === gameState.currentPlayer);
+    if (!currentPlayer?.isAI) return;
+
+    setIsAIThinking(true);
+    
+    const makeAIMove = () => {
+      if (gameState.phase === 'placement') {
+        const aiPosition = getAIPlacementMove(gameState);
+        handlePositionClick(aiPosition);
+      } else {
+        const aiMove = getAIMovementMove(gameState);
+        if (aiMove) {
+          // Sélectionner le pion puis le déplacer
+          setSelectedPiece(aiMove.piece);
+          setTimeout(() => {
+            handlePositionClick(aiMove.to);
+          }, AI_MOVE_DELAY / 2);
+        }
+      }
+      setIsAIThinking(false);
+    };
+
+    setTimeout(makeAIMove, AI_MOVE_DELAY);
+  }, [gameState, players, isAIThinking]);
 
   // Gestion des clics sur le plateau
   const handlePositionClick = useCallback((position: Position) => {
     if (!gameState || gameState.status !== 'playing') return;
+    
+    // Empêcher l'interaction si c'est le tour de l'IA
+    const currentPlayer = players.find(p => p.id === gameState.currentPlayer);
+    if (currentPlayer?.isAI && !isAIThinking) return;
 
     const currentPlayerPieces = getPlayerPieces(gameState.currentPlayer, gameState.pieces);
     const unplacedPieces = currentPlayerPieces.filter(p => !p.isPlaced);
@@ -148,11 +196,13 @@ const Index = () => {
     if (gameState.phase === 'placement') {
       // Phase de placement
       if (isPositionOccupied) {
-        toast({
-          title: "Position occupée",
-          description: "Cette intersection est déjà occupée par un pion.",
-          variant: "destructive"
-        });
+        if (!currentPlayer?.isAI) {
+          toast({
+            title: "Position occupée",
+            description: "Cette intersection est déjà occupée par un pion.",
+            variant: "destructive"
+          });
+        }
         return;
       }
 
@@ -214,15 +264,17 @@ const Index = () => {
             handleGameEnd(winner);
           }
         } else {
-          toast({
-            title: "Mouvement invalide",
-            description: "Vous ne pouvez déplacer le pion que vers une intersection adjacente libre.",
-            variant: "destructive"
-          });
+          if (!currentPlayer?.isAI) {
+            toast({
+              title: "Mouvement invalide",
+              description: "Vous ne pouvez déplacer le pion que vers une intersection adjacente libre.",
+              variant: "destructive"
+            });
+          }
         }
       }
     }
-  }, [gameState, selectedPiece, toast]);
+  }, [gameState, selectedPiece, toast, players, isAIThinking]);
 
   // Fin de partie
   const handleGameEnd = useCallback((winner: 1 | 2) => {
@@ -276,6 +328,16 @@ const Index = () => {
   }, [gameState, players, handleGameEnd, toast]);
 
   // Actions du jeu
+  const handleGameModeSelection = (mode: 'human' | 'ai') => {
+    setGameMode(mode);
+    if (mode === 'ai') {
+      setPlayers([DEFAULT_PLAYERS[0], AI_PLAYER]);
+      initializeGame(mode);
+    } else {
+      setCurrentScreen('customization');
+    }
+  };
+
   const handlePlayersUpdate = (updatedPlayers: Player[]) => {
     setPlayers(updatedPlayers);
     savePlayerSettings(updatedPlayers);
@@ -314,6 +376,14 @@ const Index = () => {
   // Rendu des écrans
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'mode-selection':
+        return (
+          <GameModeSelection
+            onSelectMode={handleGameModeSelection}
+            onBack={() => setCurrentScreen('menu')}
+          />
+        );
+
       case 'customization':
         return (
           <PlayerCustomization
@@ -368,7 +438,8 @@ const Index = () => {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm sm:text-base truncate">{currentPlayerInfo.name}</div>
                         <div className="text-xs sm:text-sm text-gray-600">
-                          {gameState.phase === 'placement' ? 'Place tes pions' : 'À ton tour'}
+                          {isAIThinking && currentPlayerInfo.isAI ? 'Réfléchit...' : 
+                           gameState.phase === 'placement' ? 'Place tes pions' : 'À ton tour'}
                         </div>
                       </div>
                     </div>
@@ -413,7 +484,7 @@ const Index = () => {
                   Menu
                 </Button>
                 <Button
-                  onClick={initializeGame}
+                  onClick={() => initializeGame()}
                   variant="outline"
                   size="sm"
                   className="text-xs sm:text-sm"
@@ -620,7 +691,7 @@ const Index = () => {
                 className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
               >
                 <Button
-                  onClick={() => setCurrentScreen('customization')}
+                  onClick={() => setCurrentScreen('mode-selection')}
                   size="lg"
                   className="h-14 sm:h-16 bg-wood hover:bg-wood-dark text-white shadow-lg"
                 >

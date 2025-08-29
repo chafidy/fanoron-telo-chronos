@@ -88,11 +88,10 @@ export function resetScores(): void {
   }
 }
 
-export function addGameToHistory(game: Omit<GameHistory, 'id'>): void {
+export function addGameToHistory(game: GameHistory): void {
   const history = loadGameHistory();
   const newGame: GameHistory = {
-    ...game,
-    id: `game-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    ...game
   };
   
   history.unshift(newGame);

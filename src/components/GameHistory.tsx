@@ -102,7 +102,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
           {/* Liste des parties */}
           <div className="space-y-4">
             {history.map((game, index) => (
-              <Card key={game.id} className="bg-white/90 backdrop-blur-sm">
+              <Card key={`${game.date.getTime()}-${game.winner.id}-${game.loser.id}`} className="bg-white/90 backdrop-blur-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
