@@ -27,7 +27,7 @@ export interface GameState {
   winner?: 1 | 2;
   turnStartTime: number;
   totalGameTime: number;
-  gameMode?: 'human' | 'ai';
+  gameMode?: 'human' | 'ai' | 'online';
 }
 
 export interface GameHistory {
