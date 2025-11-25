@@ -14,7 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_participants: {
+        Row: {
+          color: string
+          game_id: string
+          id: string
+          joined_at: string | null
+          player_number: number
+          user_id: string
+        }
+        Insert: {
+          color: string
+          game_id: string
+          id?: string
+          joined_at?: string | null
+          player_number: number
+          user_id: string
+        }
+        Update: {
+          color?: string
+          game_id?: string
+          id?: string
+          joined_at?: string | null
+          player_number?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_participants_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "online_games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      online_games: {
+        Row: {
+          created_at: string | null
+          current_player: number | null
+          game_state: Json
+          id: string
+          phase: string | null
+          status: string
+          updated_at: string | null
+          winner: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_player?: number | null
+          game_state?: Json
+          id?: string
+          phase?: string | null
+          status: string
+          updated_at?: string | null
+          winner?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_player?: number | null
+          game_state?: Json
+          id?: string
+          phase?: string | null
+          status?: string
+          updated_at?: string | null
+          winner?: number | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar: string | null
+          created_at: string | null
+          id: string
+          username: string
+        }
+        Insert: {
+          avatar?: string | null
+          created_at?: string | null
+          id: string
+          username: string
+        }
+        Update: {
+          avatar?: string | null
+          created_at?: string | null
+          id?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
