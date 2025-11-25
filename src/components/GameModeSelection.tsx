@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Bot, ArrowLeft } from 'lucide-react';
+import { Users, Bot, ArrowLeft, Wifi } from 'lucide-react';
 
 interface GameModeSelectionProps {
-  onSelectMode: (mode: 'human' | 'ai') => void;
+  onSelectMode: (mode: 'human' | 'ai' | 'online') => void;
   onBack: () => void;
 }
 
@@ -23,7 +23,7 @@ export const GameModeSelection: React.FC<GameModeSelectionProps> = ({
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {/* Mode Humain vs Humain */}
         <Card className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all cursor-pointer group">
           <CardHeader>
@@ -95,6 +95,44 @@ export const GameModeSelection: React.FC<GameModeSelectionProps> = ({
               className="w-full bg-purple-600 hover:bg-purple-700 text-white group-hover:scale-105 transition-transform"
             >
               <Bot className="w-4 h-4 mr-2" />
+              Choisir ce mode
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Mode En ligne */}
+        <Card className="bg-white/90 backdrop-blur-sm hover:bg-white/95 transition-all cursor-pointer group">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <Wifi className="w-6 h-6 text-green-600" />
+              Jeu en ligne
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-600">
+              Jouez contre d'autres joueurs en ligne partout dans le monde !
+            </p>
+            
+            <div className="space-y-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                Parties synchronisées en temps réel
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                Jouez contre le monde entier
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full" />
+                Connexion requise
+              </div>
+            </div>
+
+            <Button 
+              onClick={() => onSelectMode('online')}
+              className="w-full bg-green-600 hover:bg-green-700 text-white group-hover:scale-105 transition-transform"
+            >
+              <Wifi className="w-4 h-4 mr-2" />
               Choisir ce mode
             </Button>
           </CardContent>

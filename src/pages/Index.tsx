@@ -11,6 +11,7 @@ import { GameHistory } from '../components/GameHistory';
 import { GameRules } from '../components/GameRules';
 import { VictoryModal } from '../components/VictoryModal';
 import { Copyright } from '../components/Copyright';
+import { OnlineGameLobby } from '../components/OnlineGameLobby';
 import { 
   GameState, 
   GamePiece, 
@@ -68,8 +69,9 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAIPlacementMove, getAIMovementMove, AI_MOVE_DELAY } from '../utils/aiLogic';
+import { useNavigate } from 'react-router-dom';
 
-type GameScreen = 'menu' | 'mode-selection' | 'customization' | 'game' | 'history' | 'rules';
+type GameScreen = 'menu' | 'mode-selection' | 'customization' | 'game' | 'history' | 'rules' | 'online-lobby';
 
 const DEFAULT_PLAYERS: Player[] = [
   { id: 1, name: 'Joueur 1', color: '#FA7070', score: 0 },
@@ -91,8 +93,9 @@ const DEFAULT_SETTINGS: GameSettings = {
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('menu');
-  const [gameMode, setGameMode] = useState<'human' | 'ai'>('human');
+  const [gameMode, setGameMode] = useState<'human' | 'ai' | 'online'>('human');
   const [players, setPlayers] = useState<Player[]>(DEFAULT_PLAYERS);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [selectedPiece, setSelectedPiece] = useState<GamePiece | null>(null);
@@ -327,16 +330,6 @@ const Index = () => {
     handleGameEnd(winner);
   }, [gameState, players, handleGameEnd, toast]);
 
-  // Actions du jeu
-  const handleGameModeSelection = (mode: 'human' | 'ai') => {
-    setGameMode(mode);
-    if (mode === 'ai') {
-      setPlayers([DEFAULT_PLAYERS[0], AI_PLAYER]);
-      initializeGame(mode);
-    } else {
-      setCurrentScreen('customization');
-    }
-  };
 
   const handlePlayersUpdate = (updatedPlayers: Player[]) => {
     setPlayers(updatedPlayers);
@@ -373,13 +366,40 @@ const Index = () => {
       .map(move => move.to);
   }, [gameState, selectedPiece]);
 
+  // Gestion du mode de jeu
+  const handleModeSelection = useCallback((mode: 'human' | 'ai' | 'online') => {
+    setGameMode(mode);
+    
+    if (mode === 'online') {
+      setCurrentScreen('online-lobby');
+    } else {
+      setCurrentScreen('customization');
+      
+      if (mode === 'ai') {
+        setPlayers([DEFAULT_PLAYERS[0], AI_PLAYER]);
+      } else {
+        setPlayers(DEFAULT_PLAYERS);
+      }
+    }
+  }, []);
+
   // Rendu des écrans
   const renderScreen = () => {
     switch (currentScreen) {
       case 'mode-selection':
         return (
           <GameModeSelection
-            onSelectMode={handleGameModeSelection}
+            onSelectMode={handleModeSelection}
+            onBack={() => setCurrentScreen('menu')}
+          />
+        );
+
+      case 'online-lobby':
+        return (
+          <OnlineGameLobby
+            onGameStart={(gameId, playerNumber) => {
+              navigate(`/online/${gameId}`);
+            }}
             onBack={() => setCurrentScreen('menu')}
           />
         );
